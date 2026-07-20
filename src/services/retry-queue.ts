@@ -65,6 +65,7 @@ export class RetryQueue {
         statusCode: result.statusCode.toString(),
         attempts: (webhook.attempt + 1).toString(),
         deliveredAt: Date.now().toString(),
+        lastRequestId: result.requestId,
       });
       return true;
     }

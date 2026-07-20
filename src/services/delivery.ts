@@ -1,4 +1,5 @@
 import { request } from "undici";
+import { nanoid } from "nanoid";
 import { getConfig } from "../config";
 import { buildSignatureHeader } from "../utils/hmac";
 import { logger } from "../utils/logger";
@@ -7,6 +8,7 @@ export interface DeliveryResult {
   statusCode: number;
   durationMs: number;
   success: boolean;
+  requestId: string;
 }
 
 export async function deliverWebhook(
@@ -16,6 +18,7 @@ export async function deliverWebhook(
 ): Promise<DeliveryResult> {
   const config = getConfig();
   const signature = buildSignatureHeader(payload);
+  const requestId = nanoid(21);
   const start = Date.now();
 
   try {
@@ -25,6 +28,7 @@ export async function deliverWebhook(
         "Content-Type": "application/json",
         "X-Webhook-Signature": signature,
         "X-Webhook-Event": eventType,
+        "X-Request-Id": requestId,
         "User-Agent": "webhook-dispatcher/2.1.0",
       },
       body: payload,
@@ -38,14 +42,14 @@ export async function deliverWebhook(
     await response.body.dump();
 
     logger.info(
-      { url, statusCode: response.statusCode, durationMs, success },
+      { url, statusCode: response.statusCode, durationMs, success, requestId },
       "webhook delivered"
     );
 
-    return { statusCode: response.statusCode, durationMs, success };
+    return { statusCode: response.statusCode, durationMs, success, requestId };
   } catch (err) {
     const durationMs = Date.now() - start;
-    logger.warn({ url, err, durationMs }, "webhook delivery failed");
-    return { statusCode: 0, durationMs, success: false };
+    logger.warn({ url, err, durationMs, requestId }, "webhook delivery failed");
+    return { statusCode: 0, durationMs, success: false, requestId };
   }
 }
