@@ -19,6 +19,18 @@ export async function deliverWebhook(
   const start = Date.now();
 
   try {
+    // Validate URL before attempting delivery to catch malformed URLs early
+    try {
+      new URL(url);
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      logger.error(
+        { url, err, durationMs },
+        "invalid webhook URL - contains special characters"
+      );
+      return { statusCode: 0, durationMs, success: false };
+    }
+
     const response = await request(url, {
       method: "POST",
       headers: {

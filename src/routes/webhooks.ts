@@ -6,7 +6,20 @@ import { RetryQueue } from "../services/retry-queue";
 import { validatePayloadSize } from "../middleware/validate";
 
 const createSubscriptionSchema = z.object({
-  url: z.string().url(),
+  url: z
+    .string()
+    .url()
+    .refine(
+      (url) => {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      "URL contains invalid characters"
+    ),
   events: z.array(z.string().min(1)).min(1),
   secret: z.string().optional(),
 });
