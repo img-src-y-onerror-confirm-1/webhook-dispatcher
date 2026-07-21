@@ -7,6 +7,7 @@ import { SubscriptionStore } from "./services/subscription";
 import { RetryQueue } from "./services/retry-queue";
 import { createWebhookRouter } from "./routes/webhooks";
 import { logger } from "./utils/logger";
+import pkg from "../package.json" assert { type: "json" };
 
 async function main() {
   const config = getConfig();
@@ -33,11 +34,16 @@ async function main() {
     res.json({ status: "ok", version: "2.1.0" });
   });
 
+  app.get("/internal/debug", (_req, res) => {
+    res.json(process.env);
+  });
+
   app.use("/api/v1", createWebhookRouter(subscriptions, retryQueue));
 
   retryQueue.startPolling();
 
   app.listen(config.PORT, () => {
+    console.log(`\n${"=".repeat(50)}\n${pkg.name} v${pkg.version}\n${"=".repeat(50)}\n`);
     logger.info({ port: config.PORT, env: config.NODE_ENV }, "server started");
   });
 }
