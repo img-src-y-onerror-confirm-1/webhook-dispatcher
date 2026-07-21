@@ -9,6 +9,7 @@ const createSubscriptionSchema = z.object({
   url: z.string().url(),
   events: z.array(z.string().min(1)).min(1),
   secret: z.string().optional(),
+  timeoutMs: z.coerce.number().min(1000).max(30000).optional(),
 });
 
 const dispatchEventSchema = z.object({
@@ -32,6 +33,7 @@ export function createWebhookRouter(
         active: true,
         createdAt: Date.now(),
         secret: body.secret,
+        timeoutMs: body.timeoutMs,
       };
 
       await subscriptions.create(sub);

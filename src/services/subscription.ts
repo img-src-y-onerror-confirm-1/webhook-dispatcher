@@ -8,6 +8,7 @@ export interface Subscription {
   active: boolean;
   createdAt: number;
   secret?: string;
+  timeoutMs?: number;
 }
 
 export class SubscriptionStore {
