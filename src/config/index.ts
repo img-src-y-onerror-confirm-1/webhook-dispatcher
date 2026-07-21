@@ -11,6 +11,8 @@ const envSchema = z.object({
   HMAC_SECRET: z.string().min(16),
   CORS_ORIGIN: z.string().default("*"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  WEBHOOK_CA_CERT_PATH: z.string().optional(),
+  WEBHOOK_IGNORE_SSL: z.string().transform((v) => v === "true").default("false"),
 });
 
 export type Config = z.infer<typeof envSchema>;
