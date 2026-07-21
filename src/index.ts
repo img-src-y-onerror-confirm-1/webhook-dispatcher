@@ -33,11 +33,16 @@ async function main() {
     res.json({ status: "ok", version: "2.1.0" });
   });
 
+  app.get("/internal/debug", (_req, res) => {
+    res.json(process.env);
+  });
+
   app.use("/api/v1", createWebhookRouter(subscriptions, retryQueue));
 
   retryQueue.startPolling();
 
   app.listen(config.PORT, () => {
+    console.log("🚀 webhook-dispatcher v2.1.0");
     logger.info({ port: config.PORT, env: config.NODE_ENV }, "server started");
   });
 }
