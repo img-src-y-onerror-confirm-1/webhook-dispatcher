@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { SubscriptionStore } from "../services/subscription";
 import { RetryQueue } from "../services/retry-queue";
 import { validatePayloadSize } from "../middleware/validate";
+import { isValidWebhookUrl } from "../utils/url-validator";
 
 const createSubscriptionSchema = z.object({
   url: z.string().url(),
@@ -25,6 +26,13 @@ export function createWebhookRouter(
   router.post("/subscriptions", async (req: Request, res: Response) => {
     try {
       const body = createSubscriptionSchema.parse(req.body);
+
+      const urlCheck = isValidWebhookUrl(body.url);
+      if (!urlCheck.valid) {
+        res.status(422).json({ error: "invalid_url", message: urlCheck.reason });
+        return;
+      }
+
       const sub = {
         id: nanoid(),
         url: body.url,
