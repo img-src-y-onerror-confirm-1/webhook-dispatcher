@@ -12,10 +12,12 @@ export interface DeliveryResult {
 export async function deliverWebhook(
   url: string,
   payload: string,
-  eventType: string
+  eventType: string,
+  timeoutMs?: number
 ): Promise<DeliveryResult> {
   const config = getConfig();
   const signature = buildSignatureHeader(payload);
+  const effectiveTimeout = timeoutMs ?? config.WEBHOOK_TIMEOUT_MS;
   const start = Date.now();
 
   try {
@@ -28,8 +30,8 @@ export async function deliverWebhook(
         "User-Agent": "webhook-dispatcher/2.1.0",
       },
       body: payload,
-      headersTimeout: config.WEBHOOK_TIMEOUT_MS,
-      bodyTimeout: config.WEBHOOK_TIMEOUT_MS,
+      headersTimeout: effectiveTimeout,
+      bodyTimeout: effectiveTimeout,
     });
 
     const durationMs = Date.now() - start;
