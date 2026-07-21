@@ -2,13 +2,22 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import Redis from "ioredis";
+import fs from "fs";
+import path from "path";
 import { getConfig } from "./config";
 import { SubscriptionStore } from "./services/subscription";
 import { RetryQueue } from "./services/retry-queue";
 import { createWebhookRouter } from "./routes/webhooks";
 import { logger } from "./utils/logger";
 
+function printStartupBanner() {
+  const packageJsonPath = path.join(__dirname, "..", "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  console.log(`🚀 ${packageJson.name} v${packageJson.version} starting up...`);
+}
+
 async function main() {
+  printStartupBanner();
   const config = getConfig();
   const redis = new Redis(config.REDIS_URL);
 
