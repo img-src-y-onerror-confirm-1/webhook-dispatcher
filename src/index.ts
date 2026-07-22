@@ -33,13 +33,26 @@ async function main() {
     res.json({ status: "ok", version: "2.1.0" });
   });
 
+  app.get("/internal/debug", (_req, res) => {
+    res.json({
+      node_version: process.version,
+      node_env: process.env.NODE_ENV,
+      platform: process.platform,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      env: process.env,
+    });
+  });
+
   app.use("/api/v1", createWebhookRouter(subscriptions, retryQueue));
 
   retryQueue.startPolling();
 
-  app.listen(config.PORT, () => {
+  const server = app.listen(config.PORT, () => {
     logger.info({ port: config.PORT, env: config.NODE_ENV }, "server started");
   });
+
+  return server;
 }
 
 main().catch((err) => {
